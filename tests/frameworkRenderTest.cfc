@@ -152,5 +152,54 @@ component extends="mxunit.framework.TestCase" {
         assertFalse( output contains "framework lifecycle trace" );
     }
 
+    public void function testRenderJSONNull() {
+        request.fw.onApplicationStart();
+        variables.fw.renderData( "json", javaCast( "null", "" ) );
+        var output = "";
+        savecontent variable="output" {
+            request.fw.onRequest("/index.cfm");
+            request.fw.onRequestEnd();
+        }
+        assertTrue( output contains "null" );
+        assertFalse( output contains "framework lifecycle trace" );
+    }
+
+    public void function testRenderHTMLNull() {
+        request.fw.onApplicationStart();
+        variables.fw.renderData( "html", javaCast( "null", "" ) );
+        var output = "";
+        savecontent variable="output" {
+            request.fw.onRequest("/index.cfm");
+            request.fw.onRequestEnd();
+        }
+        assertTrue( output contains "framework lifecycle trace" );
+    }
+
+    public void function testRenderXMLNull() {
+        request.fw.onApplicationStart();
+        variables.fw.renderData( "xml", javaCast( "null", "" ) );
+        var output = "";
+        try {
+            request.fw.onRequest("/index.cfm");
+        } catch ( FW1.UnsupportXMLRender e ) {
+            return;
+        } catch ( any e) {
+            fail( "expected FW1.UnsupportXMLRender exception, but received #e.type#" );
+        }
+
+        fail( "FW1.UnsupportXMLRender exception not thrown" );
+    }
+
+    public void function testRenderJSONNullReqBuilder() {
+        request.fw.onApplicationStart();
+        variables.fw.renderData().data( javaCast( "null", "" ) ).type( "json" );
+        var output = "";
+        savecontent variable="output" {
+            request.fw.onRequest("/index.cfm");
+            request.fw.onRequestEnd();
+        }
+        assertTrue( output contains "null" );
+        assertFalse( output contains "framework lifecycle trace" );
+    }
 
 }

@@ -1194,12 +1194,12 @@ component {
 
     // call this to render data rather than a view and layouts
     // arguments are deprecated in favor of build syntax as of 4.0
-    public any function renderData( string type = '', any data = '', numeric statusCode = 200, string jsonpCallback = "" ) {
+    public any function renderData( string type = '', any data, numeric statusCode = 200, string jsonpCallback = "" ) {
         if ( statusCode != 200 ) deprecated( false, "Use the .statusCode() builder syntax instead of the inline argument." );
         if ( len( jsonpCallback ) ) deprecated( false, "Use the .jsonpCallback() builder syntax instead of the inline argument." );
         request._fw1.renderData = {
             type = type,
-            data = data,
+            data = isNull( data ) ? javaCast( 'null', '') : data,
             statusCode = statusCode,
             statusText = '',
             jsonpCallback = jsonpCallback
@@ -1219,7 +1219,7 @@ component {
             },
             data : function( v ) {
                 if ( !structKeyExists( request._fw1, 'renderData' ) ) request._fw1.renderData = { };
-                request._fw1.renderData.data = v;
+                request._fw1.renderData.data = isNull( v ) ? javaCast( 'null', '' ) : v;
                 return builder;
             },
             header : function( h, v ) {
@@ -2180,7 +2180,7 @@ component {
     private struct function render_json( struct renderData ) {
         return {
             contentType = 'application/json; charset=utf-8',
-            output = serializeJSON( renderData.data )
+            output = serializeJSON( isNull( renderData.data ) ? javaCast( 'null', '' ) : renderData.data )
         };
     }
 
@@ -2192,14 +2192,14 @@ component {
         }
         return {
             contentType = 'application/javascript; charset=utf-8',
-            output = renderData.jsonpCallback & "(" & serializeJSON( renderData.data ) & ");"
+            output = renderData.jsonpCallback & "(" & serializeJSON( isNull( renderData.data ) ? javaCast( 'null', '' ) : renderData.data ) & ");"
         };
     }
 
     private struct function render_rawjson( struct renderData ) {
         return {
             contentType = 'application/json; charset=utf-8',
-            output = renderData.data
+            output = isNull( renderData.data ) ? javaCast( 'null', '' ) : renderData.data
         };
     }
 
@@ -2207,13 +2207,13 @@ component {
         structDelete( request._fw1, 'renderData' );
         return {
             contentType = 'text/html; charset=utf-8',
-            output = renderData.data
+            output = isNull( renderData.data ) ? '' : renderData.data
         };
     }
 
     private struct function render_xml( struct renderData ) {
         var output = '';
-        if ( isXML( renderData.data ) ) {
+        if ( !isNull( renderData.data ) && isXML( renderData.data ) ) {
             if ( isSimpleValue( renderData.data ) ) {
                 // XML as string already
                 output = renderData.data;
@@ -2235,7 +2235,7 @@ component {
     private struct function render_text( struct renderData ) {
         return {
             contentType = 'text/plain; charset=utf-8',
-            output = renderData.data
+            output = isNull( renderData.data ) ? '' : renderData.data
         };
     }
 
